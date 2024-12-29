@@ -1,13 +1,13 @@
 package com.natixis.shoppingcart;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
 class AppTest {
 
-    @Test
-    void shouldAnswerWithTrue() {
-        assertTrue(true);
-    }
+  @Test
+  void smokeTest() {
+    assertDoesNotThrow(() -> App.main());
+  }
 }
