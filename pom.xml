@@ -20,6 +20,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
+    <version.jakarta.json>2.0.1</version.jakarta.json>
     <version.plugin.fmt>2.23</version.plugin.fmt>
     <version.jacoco>0.8.12</version.jacoco>
     <version.lombok>1.18.36</version.lombok>
@@ -45,6 +46,11 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>jakarta.json</artifactId>
+      <version>${version.jakarta.json}</version>
+    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -141,7 +147,7 @@
         <jdk>1.8</jdk>
       </activation>
       <properties>
-        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.release>8</maven.compiler.release>
       </properties>
     </profile>
   </profiles>

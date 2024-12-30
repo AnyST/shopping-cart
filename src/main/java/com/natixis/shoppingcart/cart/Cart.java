@@ -1,6 +1,9 @@
 package com.natixis.shoppingcart.cart;
 
+import com.natixis.shoppingcart.api.Printable;
 import com.natixis.shoppingcart.item.Item;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import java.util.*;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -8,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Cart {
+public class Cart implements Printable {
 
   private final Set<Item> items;
 
@@ -22,5 +25,16 @@ public class Cart {
 
   public static Cart multipleItemsCart(Collection<Item> items) {
     return new Cart((new HashSet<>(items)));
+  }
+
+  @Override
+  public JsonObject toJson() {
+    var sum = items.stream().map(Item::getPrice).reduce(0d, Double::sum);
+    var itemsWithPrices = Json.createObjectBuilder();
+    items.forEach(i -> itemsWithPrices.add(i.getCode(), i.getPrice()));
+    return Json.createObjectBuilder() //
+        .add("sum:", sum)
+        .add("items:", itemsWithPrices.build())
+        .build();
   }
 }

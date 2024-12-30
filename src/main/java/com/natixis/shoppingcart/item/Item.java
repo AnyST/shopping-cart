@@ -1,15 +1,22 @@
 package com.natixis.shoppingcart.item;
 
+import com.natixis.shoppingcart.api.Printable;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class Item {
+public class Item implements Printable {
 
-  private final double price;
+  private final String code;
   private final String name;
   private final String description;
-  private final String code;
+  private final double price;
 
+  @Override
+  public JsonObject toJson() {
+    return Json.createObjectBuilder().add("price", price).build();
+  }
 }

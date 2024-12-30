@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -15,7 +16,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 final class CartTest {
 
   private final Item item =
-      Item.builder().price(2).name("ItemName1").description("Description1").code("Code1").build();
+      Item.builder() //
+          .code("Code1")
+          .name("ItemName1")
+          .description("Description1")
+          .price(2)
+          .build();
 
   @Test
   void testEmptyCart() {
@@ -57,7 +63,13 @@ final class CartTest {
   void testMultipleItemsCart_withMultipleItems(
       int price, String name, String description, String code) {
     var items = new HashSet<Item>();
-    var item2 = Item.builder().price(price).name(name).description(description).code(code).build();
+    var item2 =
+        Item.builder() //
+            .code(code)
+            .name(name)
+            .description(description)
+            .price(price)
+            .build();
     items.add(this.item);
     items.add(item2);
     var cart = Cart.multipleItemsCart(items);
@@ -72,13 +84,13 @@ final class CartTest {
   void testMultipleItemsCart_withDuplicates() {
     var item1 = item;
     var item2 =
-        Item.builder()
+        Item.builder() //
+            .code("Code2")
+            .name("ItemName2")
+            .description("Description2")
             .price(4)
-            .name("Item2")
-            .description("Item description 2")
-            .code("item-code-2")
             .build();
-    Collection<Item> items = List.of(item1, item2, item1); // Duplicate item1
+    Collection<Item> items = List.of(item1, item2, item1);
 
     var cart = Cart.multipleItemsCart(items);
 
@@ -95,5 +107,66 @@ final class CartTest {
         NullPointerException.class,
         () -> Cart.multipleItemsCart(null),
         "Creating a cart with a null collection should throw NullPointerException");
+  }
+
+  @Nested
+  class ToJsonTest {
+
+    @Test
+    void testToJson_withEmptyCart() {
+      var cart = Cart.emptyCart();
+      var json = cart.toJson();
+
+      assertNotNull(json, "JSON output should not be null");
+      assertEquals(0, json.getJsonObject("items:").size(), "Items object should be empty");
+      assertEquals(0, json.getJsonNumber("sum:").doubleValue(), "Sum should be 0");
+    }
+
+    @Test
+    void testToJson_withSingleItemCart() {
+      var cart = Cart.singleItemCart(item);
+      var json = cart.toJson();
+
+      assertNotNull(json, "JSON output should not be null");
+      assertEquals(
+          1, json.getJsonObject("items:").size(), "Items object should contain exactly one item");
+      assertEquals(
+          item.getPrice(),
+          json.getJsonNumber("sum:").doubleValue(),
+          "Sum should match the price of the single item");
+      assertEquals(
+          item.getPrice(),
+          json.getJsonObject("items:").getJsonNumber(item.getCode()).doubleValue(),
+          "Item price should match in the JSON output");
+    }
+
+    @Test
+    void testToJson_withMultipleItemsCart() {
+      var item2 =
+          Item.builder()
+              .code("Code2")
+              .name("ItemName2")
+              .description("Description2")
+              .price(4)
+              .build();
+      var cart = Cart.multipleItemsCart(List.of(item, item2));
+      var json = cart.toJson();
+
+      assertNotNull(json, "JSON output should not be null");
+      assertEquals(
+          2, json.getJsonObject("items:").size(), "Items object should contain all provided items");
+      assertEquals(
+          item.getPrice() + item2.getPrice(),
+          json.getJsonNumber("sum:").doubleValue(),
+          "Sum should match the total price of all items in the cart");
+      assertEquals(
+          item.getPrice(),
+          json.getJsonObject("items:").getJsonNumber(item.getCode()).doubleValue(),
+          "First item's price should match in the JSON output");
+      assertEquals(
+          item2.getPrice(),
+          json.getJsonObject("items:").getJsonNumber(item2.getCode()).doubleValue(),
+          "Second item's price should match in the JSON output");
+    }
   }
 }
