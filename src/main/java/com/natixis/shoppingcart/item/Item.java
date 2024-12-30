@@ -17,6 +17,11 @@ public class Item implements Printable {
 
   @Override
   public JsonObject toJson() {
-    return Json.createObjectBuilder().add("price", price).build();
+    return Json.createObjectBuilder()
+        .add("code", code)
+        .add("name", name)
+        .add("description", description)
+        .add("price", price)
+        .build();
   }
 }

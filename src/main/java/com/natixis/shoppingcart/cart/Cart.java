@@ -27,8 +27,7 @@ public class Cart implements Printable {
     return new Cart((new HashSet<>(items)));
   }
 
-  @Override
-  public JsonObject toJson() {
+  public JsonObject itemsWithPrices() {
     var sum = items.stream().map(Item::getPrice).reduce(0d, Double::sum);
     var itemsWithPrices = Json.createObjectBuilder();
     items.forEach(i -> itemsWithPrices.add(i.getCode(), i.getPrice()));
@@ -36,5 +35,12 @@ public class Cart implements Printable {
         .add("sum:", sum)
         .add("items:", itemsWithPrices.build())
         .build();
+  }
+
+  @Override
+  public JsonObject toJson() {
+    var arr = Json.createArrayBuilder();
+    items.forEach(i -> arr.add(i.toJson()));
+    return Json.createObjectBuilder().add("cart", arr.build()).build();
   }
 }

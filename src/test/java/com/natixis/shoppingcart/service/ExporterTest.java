@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,6 +25,11 @@ class ExporterTest {
     properties.setProperty("file.path", tempDir.toString());
     properties.setProperty("file.name", "cart.json");
     exporter = new Exporter(properties);
+  }
+
+  @AfterEach
+  void tearDown() {
+    tempDir.toFile().deleteOnExit();
   }
 
   @Test
