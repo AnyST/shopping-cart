@@ -1,8 +1,7 @@
-package com.natixis.shoppingcart;
+package com.natixis.shoppingcart.cart;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.natixis.shoppingcart.cart.Cart;
 import com.natixis.shoppingcart.item.Item;
 import java.util.Collection;
 import java.util.HashSet;

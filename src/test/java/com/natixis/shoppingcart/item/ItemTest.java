@@ -1,8 +1,7 @@
-package com.natixis.shoppingcart;
+package com.natixis.shoppingcart.item;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.natixis.shoppingcart.item.Item;
 import jakarta.json.JsonObject;
 import org.junit.jupiter.api.Test;
 
