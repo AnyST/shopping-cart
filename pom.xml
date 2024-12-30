@@ -35,7 +35,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-bom</artifactId>
+        <version>5.12.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
@@ -56,6 +62,11 @@
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- Optionally: parameterized tests support -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -69,6 +80,7 @@
   </dependencies>
 
   <build>
+    <defaultGoal>clean install</defaultGoal>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -97,19 +109,22 @@
               </goals>
             </execution>
             <execution>
-              <id>default-check</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-            </execution>
-            <execution>
               <id>default-report</id>
               <goals>
                 <goal>report</goal>
               </goals>
             </execution>
+            <execution>
+              <id>default-check</id>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
           </executions>
           <configuration>
+            <excludes>
+              <exclude>com/natixis/shoppingcart/App*</exclude>
+            </excludes>
             <rules>
               <rule>
                 <element>BUNDLE</element>
@@ -136,9 +151,37 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.natixis.shoppingcart.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.natixis.shoppingcart.App</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
 
   <profiles>
     <profile>

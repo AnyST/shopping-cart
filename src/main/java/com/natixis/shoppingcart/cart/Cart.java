@@ -13,27 +13,19 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Cart implements Printable {
 
-  private final Set<Item> items;
+  private final Set<Item> items = new HashSet<>();
 
   public static Cart emptyCart() {
-    return new Cart(Set.of());
-  }
-
-  public static Cart singleItemCart(Item item) {
-    return new Cart(Set.of((Objects.requireNonNull(item))));
-  }
-
-  public static Cart multipleItemsCart(Collection<Item> items) {
-    return new Cart((new HashSet<>(items)));
+    return new Cart();
   }
 
   public JsonObject itemsWithPrices() {
     var sum = items.stream().map(Item::getPrice).reduce(0d, Double::sum);
     var itemsWithPrices = Json.createObjectBuilder();
-    items.forEach(i -> itemsWithPrices.add(i.getCode(), i.getPrice()));
+    items.forEach(i -> itemsWithPrices.add(i.getName(), i.getPrice()));
     return Json.createObjectBuilder() //
-        .add("sum:", sum)
-        .add("items:", itemsWithPrices.build())
+        .add("sum", sum)
+        .add("items", itemsWithPrices.build())
         .build();
   }
 
@@ -42,5 +34,13 @@ public class Cart implements Printable {
     var arr = Json.createArrayBuilder();
     items.forEach(i -> arr.add(i.toJson()));
     return Json.createObjectBuilder().add("cart", arr.build()).build();
+  }
+
+  public void addItem(final Item item) {
+    this.items.add(item);
+  }
+
+  public boolean removeItem(final String name) {
+    return this.items.removeIf(i -> i.getName().equals(name));
   }
 }

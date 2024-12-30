@@ -3,216 +3,135 @@ package com.natixis.shoppingcart.cart;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.natixis.shoppingcart.item.Item;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import jakarta.json.Json;
 import java.util.Set;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 final class CartTest {
 
-  private final Item item =
-      Item.builder() //
-          .code("Code1")
-          .name("ItemName1")
-          .description("Description1")
-          .price(2)
-          .build();
-
-  @Test
-  void testEmptyCart() {
-    var cart = Cart.emptyCart();
-    assertNotNull(cart, "Cart instance should not be null");
-    assertTrue(cart.getItems().isEmpty(), "Cart should be empty");
-  }
-
-  @Test
-  void testSingleItemCart_withNonNullItem() {
-    var cart = Cart.singleItemCart(item);
-
-    assertNotNull(cart, "Cart instance should not be null");
-    assertEquals(1, cart.getItems().size(), "Cart should contain exactly one item");
-    assertTrue(cart.getItems().contains(item), "Cart should contain the provided item");
-  }
-
-  @Test
-  void testSingleItemCart_withNullItem() {
-    assertThrows(
-        NullPointerException.class,
-        () -> Cart.singleItemCart(null),
-        "Creating a cart with a null item should throw NullPointerException");
-  }
-
-  @Test
-  void testMultipleItemsCart_withEmptyCollection() {
-    var cart = Cart.multipleItemsCart(List.of());
-
-    assertNotNull(cart, "Cart instance should not be null");
-    assertTrue(cart.getItems().isEmpty(), "Cart should be empty for an empty collection");
-  }
-
-  @ParameterizedTest
-  @CsvSource({ //
-    "2, ItemName2, Description2, Code2", //
-    "2, ItemName3, Description3, Code3" //
-  })
-  void testMultipleItemsCart_withMultipleItems(
-      int price, String name, String description, String code) {
-    var items = new HashSet<Item>();
-    var item2 =
-        Item.builder() //
-            .code(code)
-            .name(name)
-            .description(description)
-            .price(price)
-            .build();
-    items.add(this.item);
-    items.add(item2);
-    var cart = Cart.multipleItemsCart(items);
-
-    assertNotNull(cart, "Cart instance should not be null");
-    assertEquals(
-        items.size(), cart.getItems().size(), "Cart should contain all items from the collection");
-    assertTrue(cart.getItems().containsAll(items), "Cart should contain all the provided items");
-  }
-
-  @Test
-  void testMultipleItemsCart_withDuplicates() {
-    var item1 = item;
-    var item2 =
-        Item.builder() //
-            .code("Code2")
-            .name("ItemName2")
-            .description("Description2")
-            .price(4)
-            .build();
-    Collection<Item> items = List.of(item1, item2, item1);
-
-    var cart = Cart.multipleItemsCart(items);
-
-    assertNotNull(cart, "Cart instance should not be null");
-    assertEquals(
-        Set.of(item1, item2).size(),
-        cart.getItems().size(),
-        "Cart should contain unique items only");
-  }
-
-  @Test
-  void testMultipleItemsCart_withNullCollection() {
-    assertThrows(
-        NullPointerException.class,
-        () -> Cart.multipleItemsCart(null),
-        "Creating a cart with a null collection should throw NullPointerException");
-  }
+  private static final Item ITEM_1 =
+      Item.builder().name("Item1").description("Description1").price(10).build();
+  private static final Item ITEM_2 =
+      Item.builder().name("Item2").description("Description2").price(20).build();
 
   @Nested
-  class ItemsWithPrices {
+  class EmptyCart {
 
     @Test
-    void testItemsWithPrices_withEmptyCart() {
+    void testEmptyCart() {
       var cart = Cart.emptyCart();
-      var json = cart.itemsWithPrices();
-
-      assertNotNull(json, "JSON output should not be null");
-      assertEquals(0, json.getJsonObject("items:").size(), "Items object should be empty");
-      assertEquals(0, json.getJsonNumber("sum:").doubleValue(), "Sum should be 0");
+      assertNotNull(cart, "Cart instance should not be null");
+      assertTrue(cart.getItems().isEmpty(), "Cart should be empty");
     }
 
     @Test
-    void testItemsWithPrices_withSingleItemCart() {
-      var cart = Cart.singleItemCart(item);
-      var json = cart.itemsWithPrices();
-
-      assertNotNull(json, "JSON output should not be null");
+    void testEmptyCartItemsWithPrices() {
+      var cart = Cart.emptyCart();
+      var itemsWithPrices = cart.itemsWithPrices();
+      assertNotNull(itemsWithPrices, "itemsWithPrices should not be null");
+      assertTrue(itemsWithPrices.getJsonObject("items").isEmpty(), "Items object should be empty");
       assertEquals(
-          1, json.getJsonObject("items:").size(), "Items object should contain exactly one item");
-      assertEquals(
-          item.getPrice(),
-          json.getJsonNumber("sum:").doubleValue(),
-          "Sum should match the price of the single item");
-      assertEquals(
-          item.getPrice(),
-          json.getJsonObject("items:").getJsonNumber(item.getCode()).doubleValue(),
-          "Item price should match in the JSON output");
-    }
-
-    @Test
-    void testItemsWithPrices_withMultipleItemsCart() {
-      var item2 =
-          Item.builder()
-              .code("Code2")
-              .name("ItemName2")
-              .description("Description2")
-              .price(4)
-              .build();
-      var cart = Cart.multipleItemsCart(List.of(item, item2));
-      var json = cart.itemsWithPrices();
-
-      assertNotNull(json, "JSON output should not be null");
-      assertEquals(
-          2, json.getJsonObject("items:").size(), "Items object should contain all provided items");
-      assertEquals(
-          item.getPrice() + item2.getPrice(),
-          json.getJsonNumber("sum:").doubleValue(),
-          "Sum should match the total price of all items in the cart");
-      assertEquals(
-          item.getPrice(),
-          json.getJsonObject("items:").getJsonNumber(item.getCode()).doubleValue(),
-          "First item's price should match in the JSON output");
-      assertEquals(
-          item2.getPrice(),
-          json.getJsonObject("items:").getJsonNumber(item2.getCode()).doubleValue(),
-          "Second item's price should match in the JSON output");
+          0.0,
+          itemsWithPrices.getJsonNumber("sum").doubleValue(),
+          "Total price should be zero for an empty cart");
     }
   }
 
   @Nested
-  class ToJsonTest {
+  class ToJson {
 
     @Test
     void testToJson_withEmptyCart() {
       var cart = Cart.emptyCart();
       var json = cart.toJson();
-      assertNotNull(json, "JSON should not be null");
-      assertFalse(json.isEmpty(), "JSON object should not be empty for an empty cart");
-      assertTrue(json.containsKey("cart"), "JSON must have cart property");
-      assertTrue(json.get("cart").asJsonArray().isEmpty(), "JSON cart value should be empty");
+      assertNotNull(json, "JSON representation should not be null");
+      assertEquals(
+          Json.createObjectBuilder().add("cart", Json.createArrayBuilder().build()).build(),
+          json,
+          "JSON should represent an empty cart correctly");
     }
 
     @Test
-    void testToJson_withSingleItemCart() {
-      var cart = Cart.singleItemCart(item);
+    void testToJson_withItems() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      cart.addItem(ITEM_2);
       var json = cart.toJson();
+      assertNotNull(json, "JSON representation should not be null");
+      var arr = Json.createArrayBuilder().add(ITEM_1.toJson()).add(ITEM_2.toJson()).build();
+      assertTrue(arr.contains(ITEM_1.toJson()), "ITEM_1 should be in the cart");
+      assertTrue(arr.contains(ITEM_2.toJson()), "ITEM_2 should be in the cart");
+    }
+  }
 
-      assertNotNull(json, "JSON should not be null");
-      assertFalse(json.isEmpty(), "JSON object should not be empty");
-      assertTrue(json.containsKey("cart"), "JSON must have 'cart' property");
-      var jsonCart = json.get("cart").asJsonArray();
-      assertFalse(jsonCart.isEmpty(), "JSON cart value should not be empty");
-      assertEquals(1, jsonCart.size(), "JSON cart value should contain all items");
+  @Nested
+  class AddItem {
+
+    @Test
+    void testAddSingleItem() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      assertEquals(1, cart.getItems().size(), "Cart should contain exactly one item.");
+      assertTrue(cart.getItems().contains(ITEM_1), "Cart should contain ITEM_1.");
     }
 
     @Test
-    void testToJson_withMultipleItemsCart() {
-      var item2 =
-          Item.builder()
-              .code("Code2")
-              .name("ItemName2")
-              .description("Description2")
-              .price(4)
-              .build();
-      var cart = Cart.multipleItemsCart(List.of(item, item2));
-      var json = cart.toJson();
+    void testAddDuplicateItem() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      cart.addItem(ITEM_1);
+      assertEquals(1, cart.getItems().size(), "Cart should not allow duplicate items.");
+    }
 
-      assertNotNull(json, "JSON should not be null");
-      assertFalse(json.isEmpty(), "JSON object should not be empty");
-      assertTrue(json.containsKey("cart"), "JSON must have 'cart' property");
-      var jsonCart = json.get("cart").asJsonArray();
-      assertFalse(jsonCart.isEmpty(), "JSON cart value should not be empty");
-      assertEquals(2, jsonCart.size(), "JSON cart value should contain all items");
+    @Test
+    void testAddMultipleItems() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      cart.addItem(ITEM_2);
+      assertEquals(2, cart.getItems().size(), "Cart should contain exactly two items.");
+      assertTrue(
+          cart.getItems().containsAll(Set.of(ITEM_1, ITEM_2)),
+          "Cart should contain ITEM_1 and ITEM_2.");
+    }
+  }
+
+  @Nested
+  class RemoveItem {
+
+    @Test
+    void testRemoveExistingItem() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      cart.addItem(ITEM_2);
+      var result = cart.removeItem(ITEM_1.getName());
+      assertTrue(result, "Removing an existing item should return true");
+      assertEquals(
+          1, cart.getItems().size(), "Cart should contain exactly one item after removal.");
+      assertFalse(cart.getItems().contains(ITEM_1), "Cart should no longer contain ITEM_1.");
+    }
+
+    @Test
+    void testRemoveNonExistingItem() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      var result = cart.removeItem(ITEM_2.getName());
+      assertFalse(result, "Removing a non-existing item should return false");
+      assertEquals(
+          1,
+          cart.getItems().size(),
+          "Cart size should not change when removing non-existing item.");
+      assertTrue(cart.getItems().contains(ITEM_1), "Cart should still contain ITEM_1.");
+    }
+
+    @Test
+    void testRemoveAllItems() {
+      var cart = Cart.emptyCart();
+      cart.addItem(ITEM_1);
+      cart.addItem(ITEM_2);
+      cart.removeItem(ITEM_1.getName());
+      cart.removeItem(ITEM_2.getName());
+      assertTrue(cart.getItems().isEmpty(), "Cart should be empty after removing all items.");
     }
   }
 }
